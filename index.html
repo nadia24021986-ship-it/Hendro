@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TrainerShare Pro - Instant Quiz Publisher</title>
-    <!-- Tailwind CSS -->
+    <title>TrainerShare Live - Realtime Quiz Engine</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -39,32 +38,33 @@
                     </div>
                     <div>
                         <h1 class="text-sm sm:text-base font-bold tracking-tight text-white flex items-center gap-1.5">
-                            TrainerShare <span class="text-[9px] bg-brand-500/10 text-brand-400 px-2 py-0.5 rounded-full border border-brand-500/20">Vercel Pro</span>
+                            TrainerShare <span class="text-[9px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20 font-mono">LIVE CLOUD</span>
                         </h1>
-                        <p class="text-[10px] text-slate-400 font-medium hidden sm:block">Bina 100+ Soal Kolom • Hasilkan Link • Analisis Hasil</p>
+                        <p class="text-[10px] text-slate-400 font-medium">Sistem Monitoring Evaluasi Peserta Real-Time</p>
                     </div>
                 </div>
-                <!-- Tombol Indikator Peran di Mobile -->
-                <span id="role-indicator" class="sm:hidden text-[10px] bg-violet-500/10 border border-violet-500/30 text-violet-400 px-2.5 py-1 rounded-full font-bold">👨‍🏫 Trainer</span>
+                <span id="role-badge-mobile" class="sm:hidden text-[10px] bg-violet-500/10 border border-violet-500/30 text-violet-400 px-2.5 py-1 rounded-full font-bold">Memuat...</span>
             </div>
             
-            <!-- Kontrol Aksi Kanan -->
-            <div class="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto border-t border-slate-800/60 sm:border-none pt-2.5 sm:pt-0">
-                <span id="role-indicator-desktop" class="hidden sm:inline-block text-[11px] bg-violet-500/10 border border-violet-500/30 text-violet-400 px-3 py-1 rounded-full font-bold">👨‍🏫 Panel Pengajar</span>
+            <div class="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto border-t border-slate-800/60 sm:border-none pt-2.5 sm:pt-0">
+                <div class="text-right hidden md:block">
+                    <span class="text-[10px] text-slate-500 block uppercase tracking-wider font-bold">KODE ROOM AKTIF</span>
+                    <span id="room-id-display" class="text-xs font-mono font-bold text-brand-400">CONNECTING...</span>
+                </div>
                 
                 <div class="flex items-center space-x-2 ml-auto sm:ml-0">
-                    <button onclick="window.toggleDbSettings()" class="text-[11px] bg-slate-800 hover:bg-slate-750 text-slate-300 px-3 py-1.5 rounded-xl border border-slate-700 transition-all flex items-center gap-1 font-semibold">
-                        ⚙️ Set DB
+                    <button onclick="window.openDbModal()" class="text-[11px] bg-slate-800 hover:bg-slate-750 text-slate-300 px-3 py-1.5 rounded-xl border border-slate-700 transition-all font-semibold">
+                        ⚙️ Konfigurasi Firebase
                     </button>
-                    <span id="db-status-badge" class="px-2.5 py-1.5 bg-amber-500/10 border border-amber-500/30 text-amber-400 rounded-xl text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">
-                        🔌 Offline (Lokal)
+                    <span id="cloud-status-badge" class="px-2.5 py-1.5 bg-amber-500/10 border border-amber-500/30 text-amber-400 rounded-xl text-[10px] font-bold uppercase tracking-wider">
+                        🔄 Menghubungkan...
                     </span>
                 </div>
             </div>
         </div>
     </header>
 
-    <!-- Notifikasi Sistem -->
+    <!-- Toast Notification -->
     <div id="toast" class="fixed top-24 right-4 z-50 transform translate-y-[-100px] opacity-0 transition-all duration-300 bg-brand-600 text-white px-4 py-3 rounded-xl shadow-xl flex items-center space-x-2 text-xs font-bold border border-brand-500/30">
         <span>📢</span>
         <span id="toast-message">Notifikasi</span>
@@ -73,48 +73,42 @@
     <!-- MAIN CONTAINER -->
     <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
-        <!-- ================= PANEL TRAINER ================= -->
-        <div id="view-trainer" class="space-y-6">
-            
-            <!-- Warning Banner for Offline Mode -->
-            <div id="db-warning-banner" class="bg-amber-500/10 border border-amber-500/20 p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div class="flex items-start gap-3">
-                    <span class="text-xl">💡</span>
-                    <div>
-                        <h4 class="text-xs sm:text-sm font-bold text-amber-300">Mode Fallback Link Aktif</h4>
-                        <p class="text-[11px] text-slate-400 mt-0.5">Anda belum menyambungkan database Firebase. Soal yang Anda buat akan langsung dikodekan di dalam tautan kuis (Base64 URL parameter).</p>
-                    </div>
-                </div>
-                <button onclick="window.toggleDbSettings()" class="w-full sm:w-auto text-center px-3.5 py-2 bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold rounded-xl text-xs transition-all whitespace-nowrap">
-                    Hubungkan Database
-                </button>
+        <!-- SETUP SCREEN (JIKA FIREBASE BELUM DI-SET) -->
+        <div id="view-setup-required" class="hidden max-w-md mx-auto my-12 bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-5 text-center shadow-2xl">
+            <div class="w-12 h-12 bg-amber-500/10 text-amber-400 rounded-2xl flex items-center justify-center text-xl mx-auto border border-amber-500/20">⚠️</div>
+            <div class="space-y-1">
+                <h3 class="text-base font-bold text-white">Database Belum Terhubung</h3>
+                <p class="text-xs text-slate-400">Aplikasi ini menggunakan sinkronisasi cloud real-time penuh. Silakan masukkan config Firebase Project Anda untuk mengaktifkan room.</p>
             </div>
+            <button onclick="window.openDbModal()" class="w-full py-2.5 bg-brand-600 hover:bg-brand-500 text-white font-bold rounded-xl text-xs transition-all shadow-lg shadow-brand-500/25">
+                Input Config Firebase Sekarang
+                </button>
+        </div>
 
+        <!-- ================= PANEL TRAINER ================= -->
+        <div id="view-trainer" class="hidden space-y-6">
+            
             <!-- Pengurusan Sesi & Link -->
             <div class="bg-slate-900 border border-slate-800 p-5 rounded-3xl space-y-4">
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                     <div>
-                        <h2 class="text-sm sm:text-base font-bold text-white">🔗 Tautan Sesi Pelatihan</h2>
-                        <p class="text-[11px] text-slate-400 mt-0.5">Bagikan tautan parameter di bawah ini ke peserta Anda.</p>
+                        <h2 class="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+                            <span>🔗</span> <span>Link Evaluasi Jarak Jauh (Online)</span>
+                        </h2>
+                        <p class="text-[11px] text-slate-400 mt-0.5">Kirim tautan room di bawah ini ke WhatsApp/Grup chat peserta pelatihan.</p>
                     </div>
                     
                     <div class="flex items-center space-x-2 w-full md:w-auto">
                         <span class="text-xs text-slate-400 whitespace-nowrap">Judul Sesi:</span>
-                        <input id="input-session-title" type="text" value="Sesi Evaluasi Kompetensi" class="w-full md:w-56 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-brand-500 font-semibold">
+                        <input id="input-session-title" type="text" value="Evaluasi Kompetensi Mandiri" class="w-full md:w-56 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-brand-500 font-semibold">
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 pt-1">
-                    <div class="lg:col-span-2 flex items-center space-x-2 bg-slate-950 p-2 rounded-xl border border-slate-800">
-                        <span class="text-[9px] text-slate-500 uppercase font-bold tracking-wider px-1 hidden sm:inline">Link</span>
-                        <input id="share-link-input" type="text" readonly value="" class="bg-transparent border-none text-[11px] text-brand-400 w-full focus:outline-none select-all font-mono truncate px-1">
-                        <button onclick="window.copyShareLink()" class="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-xs font-bold transition-all shrink-0">
-                            Salin Link
-                        </button>
-                    </div>
-
-                    <button onclick="window.simulateAsParticipant()" class="w-full py-2.5 bg-brand-600/10 hover:bg-brand-600 text-brand-300 hover:text-white border border-brand-500/20 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2">
-                        <span>📝</span> Jawab Sebagai Peserta (Simulasi)
+                <div class="flex items-center space-x-2 bg-slate-950 p-2 rounded-xl border border-slate-800">
+                    <span class="text-[9px] text-slate-500 uppercase font-bold tracking-wider px-1 font-mono">LINK PESERTA</span>
+                    <input id="share-link-input" type="text" readonly value="Mengenerate link..." class="bg-transparent border-none text-[11px] text-brand-400 w-full focus:outline-none select-all font-mono truncate px-1">
+                    <button onclick="window.copyShareLink()" class="px-5 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-xs font-bold transition-all shrink-0 shadow-md">
+                        Salin Tautan
                     </button>
                 </div>
             </div>
@@ -124,9 +118,9 @@
                 <div class="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
                     <div>
                         <h3 class="text-sm sm:text-base font-bold text-white flex items-center gap-2">
-                            <span>📊</span> <span>Editor Kolom Soal Pilihan Berganda (Kolom A, B, C, D)</span>
+                            <span>📊</span> <span>Bank Soal Kolom Pilihan Ganda (A, B, C, D)</span>
                         </h3>
-                        <p class="text-[11px] text-slate-400 mt-0.5">Tulis langsung pertanyaan, opsi kolom, dan tentukan kunci jawaban.</p>
+                        <p class="text-[11px] text-slate-400 mt-0.5">Perubahan bank soal yang disimpan akan langsung ter-update di layar pengerjaan peserta secara online.</p>
                     </div>
                     
                     <div class="flex flex-wrap gap-1.5">
@@ -137,21 +131,20 @@
                             + 10 Baris
                         </button>
                         <button onclick="window.inject100Questions()" class="px-3 py-2 bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600 hover:text-white rounded-xl text-xs font-bold border border-emerald-500/20 transition-all">
-                            ⚡ Isi 100 Demo
+                            ⚡ Isi 100 Demo Soal
                         </button>
                         <button onclick="window.triggerResetAll()" class="px-3 py-2 bg-rose-950/20 hover:bg-rose-900/40 text-rose-400 rounded-xl text-xs font-bold border border-rose-500/10 transition-all">
-                            🗑️ Reset
+                            🗑️ Reset Room
                         </button>
                     </div>
                 </div>
 
-                <!-- Excel-like Grid Layout Container -->
-                <div class="overflow-x-auto rounded-2xl border border-slate-800 max-h-[420px] overflow-y-auto">
+                <div class="overflow-x-auto rounded-2xl border border-slate-800 max-h-[380px] overflow-y-auto">
                     <table class="min-w-full divide-y divide-slate-800 text-left text-xs table-fixed">
                         <thead class="bg-slate-950 text-slate-300 uppercase tracking-wider font-semibold sticky top-0 z-10">
                             <tr>
                                 <th class="px-2 py-3 text-center w-12 bg-slate-950">No</th>
-                                <th class="px-3 py-3 w-[260px] sm:w-[320px] bg-slate-950">Pertanyaan</th>
+                                <th class="px-3 py-3 w-[300px] bg-slate-950">Pertanyaan</th>
                                 <th class="px-3 py-3 w-[150px] bg-slate-950">Kolom A</th>
                                 <th class="px-3 py-3 w-[150px] bg-slate-950">Kolom B</th>
                                 <th class="px-3 py-3 w-[150px] bg-slate-950">Kolom C</th>
@@ -161,15 +154,15 @@
                             </tr>
                         </thead>
                         <tbody id="questions-grid-tbody" class="divide-y divide-slate-800 bg-slate-900/50">
-                            <!-- Rows secara dinamis -->
+                            <!-- Injeksi Baris -->
                         </tbody>
                     </table>
                 </div>
 
-                <div class="flex flex-col sm:flex-row justify-between items-center gap-3 pt-2">
-                    <span id="grid-status-counter" class="text-xs text-slate-400 font-medium order-2 sm:order-1">Memuat baris...</span>
-                    <button onclick="window.saveGridData()" class="w-full sm:w-auto px-6 py-3 bg-brand-600 hover:bg-brand-500 text-white font-bold rounded-xl text-xs transition-all shadow-lg shadow-brand-500/25 order-1 sm:order-2">
-                        Simpan Semua & Update Link
+                <div class="flex flex-col sm:flex-row justify-between items-center gap-3 pt-1">
+                    <span id="grid-status-counter" class="text-xs text-slate-400 font-mono">Menghitung database soal...</span>
+                    <button onclick="window.saveGridData()" class="w-full sm:w-auto px-6 py-3 bg-brand-600 hover:bg-brand-500 text-white font-bold rounded-xl text-xs transition-all shadow-lg shadow-brand-500/25">
+                        📡 Publikasikan & Update Soal Online
                     </button>
                 </div>
             </div>
@@ -178,15 +171,15 @@
             <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 space-y-5">
                 <div>
                     <h3 class="text-sm sm:text-base font-bold text-white flex items-center gap-2">
-                        <span>📊</span> <span>Hasil & Analisis Jawaban Peserta</span>
+                        <span>📊</span> <span>Live Monitoring Dashboard Peserta</span>
                     </h3>
-                    <p class="text-[11px] text-slate-400 mt-0.5">Status pencapaian skor kompetensi peserta pelatihan.</p>
+                    <p class="text-[11px] text-slate-400 mt-0.5">Hasil pengerjaan tugas/kuis masuk secara real-time begitu tombol kirim ditekan oleh peserta.</p>
                 </div>
 
                 <!-- Metrics Grid -->
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div class="bg-slate-950 border border-slate-850 p-4 rounded-xl">
-                        <span class="text-[11px] text-slate-400 block font-medium">Total Peserta</span>
+                        <span class="text-[11px] text-slate-400 block font-medium">Total Peserta Masuk</span>
                         <span id="stat-total-subs" class="text-xl sm:text-2xl font-black text-white block mt-0.5">0</span>
                     </div>
                     <div class="bg-slate-950 border border-slate-850 p-4 rounded-xl">
@@ -199,46 +192,36 @@
                     </div>
                     <div class="bg-slate-950 border border-slate-850 p-4 rounded-xl">
                         <span class="text-[11px] text-slate-400 block font-medium">Nilai Terendah</span>
-                        <span id="stat-min-score" class="text-xl sm:text-2xl font-black text-amber-500 block mt-0.5">0%</span>
+                        <span id="stat-min-score" class="text-xl sm:text-2xl font-black text-rose-400 block mt-0.5">0%</span>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
-                    <!-- Hardest Questions Box -->
-                    <div class="lg:col-span-1 bg-slate-950 border border-slate-850 p-4 rounded-2xl space-y-3">
-                        <div>
-                            <h4 class="text-[11px] font-bold uppercase tracking-wider text-slate-300">⚠️ Indeks Soal Tersulit</h4>
-                            <p class="text-[10px] text-slate-500 mt-0.5">Daftar pertanyaan yang paling banyak dijawab salah.</p>
-                        </div>
-                        <div id="hardest-questions-box" class="space-y-2.5">
-                            <!-- Injeksi dinamis -->
-                        </div>
+                <!-- Hasil Tabel Utama Realtime -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h4 class="text-[11px] font-bold uppercase tracking-wider text-slate-400">📋 Database Identitas & Hasil Rinci Tugas</h4>
+                        <button onclick="window.downloadCSVResults()" class="px-3 py-1.5 bg-slate-850 hover:bg-slate-800 text-slate-200 rounded-xl text-xs font-bold border border-slate-700 transition-all">
+                            📥 Unduh Master Excel (.CSV)
+                        </button>
                     </div>
 
-                    <!-- Individual Submissions Table -->
-                    <div class="lg:col-span-2 space-y-3">
-                        <div class="flex items-center justify-between">
-                            <h4 class="text-[11px] font-bold uppercase tracking-wider text-slate-300">📋 Hasil Individual</h4>
-                            <button onclick="window.downloadCSVResults()" class="px-3 py-1.5 bg-slate-850 hover:bg-slate-800 text-slate-200 rounded-xl text-xs font-bold border border-slate-700 transition-all">
-                                📥 Unduh CSV
-                            </button>
-                        </div>
-
-                        <div class="overflow-x-auto rounded-xl border border-slate-800 max-h-[260px] overflow-y-auto">
-                            <table class="min-w-full divide-y divide-slate-800 text-left text-xs">
-                                <thead class="bg-slate-950 text-slate-400 uppercase font-semibold">
-                                    <tr>
-                                        <th class="px-4 py-3">Nama Lengkap</th>
-                                        <th class="px-4 py-3 text-center">Betul / Total</th>
-                                        <th class="px-4 py-3 text-right">Skor</th>
-                                        <th class="px-4 py-3 text-right">Waktu Selesai</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="individual-results-tbody" class="divide-y divide-slate-800 bg-slate-900/50">
-                                    <!-- Rekaman Ujian -->
-                                </tbody>
-                            </table>
-                        </div>
+                    <div class="overflow-x-auto rounded-xl border border-slate-800 max-h-[350px] overflow-y-auto">
+                        <table class="min-w-full divide-y divide-slate-800 text-left text-xs">
+                            <thead class="bg-slate-950 text-slate-400 uppercase font-semibold">
+                                <tr>
+                                    <th class="px-4 py-3">Nama Peserta</th>
+                                    <th class="px-4 py-3">Jabatan</th>
+                                    <th class="px-4 py-3">Wilayah Kerja</th>
+                                    <th class="px-4 py-3">Rincian Jawaban (No:Pilihan)</th>
+                                    <th class="px-4 py-3 text-center">Benar/Total</th>
+                                    <th class="px-4 py-3 text-right">Skor Akhir</th>
+                                    <th class="px-4 py-3 text-right">Waktu Kirim</th>
+                                </tr>
+                            </thead>
+                            <tbody id="individual-results-tbody" class="divide-y divide-slate-800 bg-slate-900/50">
+                                <tr><td colspan="7" class="px-4 py-8 text-center text-slate-500 font-medium">Menunggu peserta masuk dan mengirim hasil jawaban...</td></tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -246,28 +229,41 @@
 
         <!-- ================= PANEL PESERTA ================= -->
         <div id="view-participant" class="hidden max-w-2xl mx-auto space-y-6">
-            <!-- Welcome Screen -->
+            <!-- Welcome Screen (Daftar Identitas) -->
             <div id="participant-welcome" class="bg-slate-900 border border-slate-850 p-6 sm:p-8 rounded-3xl text-center space-y-6 shadow-2xl">
                 <div class="w-14 h-14 bg-brand-500/10 text-brand-400 rounded-2xl flex items-center justify-center text-2xl mx-auto border border-brand-500/20">
-                    📝
+                    📋
                 </div>
                 <div class="space-y-1.5">
-                    <h2 class="text-lg sm:text-xl font-bold text-white" id="p-quiz-title">Nama Kursus Latihan</h2>
-                    <p class="text-xs text-slate-400">Silakan masukkan nama lengkap Anda untuk memulai evaluasi materi.</p>
+                    <h2 class="text-lg sm:text-xl font-bold text-white" id="p-quiz-title">Memuat Lembar Evaluasi...</h2>
+                    <p class="text-xs text-slate-400">Silakan isi formulir pendaftaran tugas di bawah ini sebelum memulai ujian.</p>
                 </div>
 
-                <div class="max-w-md mx-auto p-4 bg-slate-950/60 border border-slate-800 rounded-2xl space-y-3 text-left">
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Nama Lengkap Anda</label>
-                    <input id="participant-name" type="text" placeholder="Ketik nama lengkap..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs sm:text-sm text-white focus:outline-none focus:border-brand-500">
-                    <button onclick="window.startExamAction()" class="w-full py-3 bg-brand-600 hover:bg-brand-500 text-white rounded-xl text-xs font-bold transition-all mt-1">
-                        Mulai Jawab
+                <div class="max-w-md mx-auto p-5 bg-slate-950/60 border border-slate-800 rounded-2xl space-y-4 text-left">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Nama Lengkap Peserta</label>
+                        <input id="participant-name" type="text" placeholder="Ketik nama lengkap Anda..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-brand-500 font-medium">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Jabatan / Posisi</label>
+                        <input id="participant-role" type="text" placeholder="Contoh: Staff Operasional, Supervisor, Sales..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-brand-500 font-medium">
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Wilayah Kerja / Cabang Kantor</label>
+                        <input id="participant-region" type="text" placeholder="Contoh: Cabang Bandung, Regional Utama, Site Barat..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-brand-500 font-medium">
+                    </div>
+
+                    <button onclick="window.startExamAction()" class="w-full py-3 bg-brand-600 hover:bg-brand-500 text-white rounded-xl text-xs font-bold transition-all mt-2 shadow-lg shadow-brand-600/20">
+                        Mulai Kerjakan Sekarang 🚀
                     </button>
                 </div>
 
                 <div class="pt-3 flex items-center justify-center space-x-4 text-xs text-slate-500 border-t border-slate-800/80">
-                    <span id="p-total-questions-badge">0 Soal</span>
+                    <span id="p-total-questions-badge">0 Soal Terdeteksi</span>
                     <span>•</span>
-                    <span>Format: Pilihan Ganda</span>
+                    <span>Mode: Sinkronisasi Cloud Live</span>
                 </div>
             </div>
 
@@ -280,303 +276,246 @@
                 <div class="p-5 sm:p-7 space-y-5">
                     <div class="flex items-center justify-between text-xs text-slate-400">
                         <span id="exam-counter-text">Soal 1 dari X</span>
-                        <span class="px-2 py-0.5 bg-slate-950 rounded border border-slate-800 font-semibold" id="exam-score-live-tracker">Kemajuan: 0%</span>
+                        <span class="px-2 py-0.5 bg-slate-950 rounded border border-slate-800 font-mono font-bold text-brand-400" id="exam-score-live-tracker">Progress: 0%</span>
                     </div>
 
                     <div class="space-y-3.5">
-                        <h3 class="text-sm sm:text-base font-bold text-white leading-relaxed" id="exam-question-text">Memuat pertanyaan...</h3>
+                        <h3 class="text-sm sm:text-base font-bold text-white leading-relaxed" id="exam-question-text">Memuat baris soal...</h3>
                         <div class="grid grid-cols-1 gap-2.5 pt-1" id="exam-options-container">
-                            <!-- Opsi rendered secara dinamis -->
+                            <!-- Opsi Pilihan Ganda -->
                         </div>
                     </div>
 
                     <div class="flex justify-between items-center pt-4 border-t border-slate-800">
-                        <span class="text-[11px] text-slate-500">Pilih opsi terbaik untuk melanjutkan.</span>
-                        <button id="btn-next-question" onclick="window.advanceExamQuestion()" class="px-5 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-xl text-xs font-bold transition-all">
+                        <span class="text-[11px] text-slate-500 font-medium">Pilih opsi terbaik lalu klik seterusnya.</span>
+                        <button id="btn-next-question" onclick="window.advanceExamQuestion()" class="px-5 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-xl text-xs font-bold transition-all shadow-md">
                             Seterusnya
                         </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Complete Screen - DIPERBAIKI TOTAL UNTUK MODE OFFLINE & ONLINE -->
+            <!-- Complete Screen -->
             <div id="participant-completed" class="hidden bg-slate-900 border border-emerald-500/20 p-8 rounded-3xl text-center space-y-6 shadow-2xl">
                 <div class="w-14 h-14 bg-emerald-500/10 text-emerald-400 rounded-full flex items-center justify-center text-2xl mx-auto border border-emerald-500/20">
-                    🎉
+                    ✓
                 </div>
                 <div class="space-y-1.5">
-                    <h2 class="text-lg sm:text-xl font-bold text-white">Evaluasi Selesai!</h2>
-                    <p class="text-xs text-slate-400">Terima kasih <span id="label-completed-user" class="font-bold text-brand-400">Peserta</span>. Hasil evaluasi Anda berhasil diproses.</p>
+                    <h2 class="text-lg sm:text-xl font-bold text-white">Jawaban Berhasil Dikirim!</h2>
+                    <p class="text-xs text-slate-400">Terima kasih <span id="label-completed-user" class="font-bold text-brand-400">Peserta</span>. Hasil nilai Anda telah ter-update otomatis di dashboard trainer.</p>
                 </div>
 
                 <div class="max-w-xs mx-auto bg-slate-950 p-5 rounded-2xl border border-slate-800/80 space-y-1">
-                    <span class="text-[10px] text-slate-500 block uppercase tracking-wider font-semibold">Skor Akhir</span>
-                    <span class="text-3xl font-black text-emerald-400" id="label-completed-score">100%</span>
-                    <p class="text-[11px] text-slate-400 mt-1" id="label-completed-stats">Betul 10 dari 10 soal.</p>
-                </div>
-
-                <div class="pt-4 border-t border-slate-800 space-y-3">
-                    <!-- Tombol Unduh Hasil Konkrit untuk fallback offline -->
-                    <button onclick="window.downloadMyResult()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition-all shadow-lg shadow-emerald-900/20">
-                        📥 Unduh Bukti Hasil (Format .TXT)
-                    </button>
-                    <p class="text-[10px] text-slate-500">Karena sistem sedang offline/lokal, silakan unduh berkas di atas lalu kirimkan hasilnya ke WhatsApp/Email Pengajar Anda.</p>
-                    
-                    <div id="participant-back-btn-container" class="pt-2">
-                        <button onclick="window.backToTrainerDashboard()" class="w-full py-2.5 bg-slate-850 hover:bg-slate-800 text-slate-300 border border-slate-800 rounded-xl text-xs font-bold transition-all">
-                            Kembali ke Panel Trainer
-                        </button>
-                    </div>
+                    <span class="text-[10px] text-slate-500 block uppercase tracking-wider font-semibold">Skor Anda</span>
+                    <span class="text-3xl font-black text-emerald-400" id="label-completed-score">0%</span>
+                    <p class="text-[11px] text-slate-400 mt-1" id="label-completed-stats">Memuat akurasi...</p>
                 </div>
             </div>
         </div>
 
-        <!-- ================= DATABASE SETTINGS MODAL ================= -->
+        <!-- ================= CONFIG DATABASE MODAL ================= -->
         <div id="modal-db-settings" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-            <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-5 space-y-5 shadow-2xl text-xs sm:text-sm">
+            <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-5 space-y-4 shadow-2xl">
                 <div>
-                    <h3 class="text-sm sm:text-base font-bold text-white">⚙️ Pengaturan Database (Firebase)</h3>
-                    <p class="text-xs text-slate-400 mt-1">Masukkan Config Firebase JSON untuk mengaktifkan fitur penyimpanan real-time global.</p>
+                    <h3 class="text-sm sm:text-base font-bold text-white">⚙️ Tautkan Projek Firebase Cloud</h3>
+                    <p class="text-xs text-slate-400 mt-1">Tempel (*paste*) kode json konfigurasi web app dari console firebase Anda.</p>
                 </div>
 
                 <div class="space-y-3">
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-400 mb-1">Firebase Configuration (Format JSON)</label>
-                        <textarea id="db-config-textarea" rows="6" class="w-full bg-slate-950 border border-slate-850 rounded-xl p-3 text-xs font-mono text-slate-300 focus:outline-none focus:border-brand-500" placeholder='{&#10;  "apiKey": "AIzaSy...",&#10;  "authDomain": "...",&#10;  "projectId": "...",&#10;  "storageBucket": "...",&#10;  "messagingSenderId": "...",&#10;  "appId": "..."&#10;}'></textarea>
-                    </div>
+                    <textarea id="db-config-textarea" rows="7" class="w-full bg-slate-950 border border-slate-850 rounded-xl p-3 text-xs font-mono text-slate-300 focus:outline-none focus:border-brand-500" placeholder='{&#10;  "apiKey": "AIzaSy...",&#10;  "authDomain": "...",&#10;  "projectId": "...",&#10;  "storageBucket": "...",&#10;  "messagingSenderId": "...",&#10;  "appId": "..."&#10;}'></textarea>
                 </div>
 
                 <div class="flex justify-end gap-2 pt-1">
-                    <button onclick="window.toggleDbSettings()" class="px-4 py-2 bg-slate-800 hover:bg-slate-750 text-slate-300 rounded-xl text-xs font-medium">Tutup</button>
-                    <button onclick="window.saveDbSettings()" class="px-5 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-xl text-xs font-bold shadow-lg">Simpan & Hubungkan</button>
+                    <button onclick="window.closeDbModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-750 text-slate-300 rounded-xl text-xs font-medium">Batal</button>
+                    <button onclick="window.saveDbSettings()" class="px-5 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-brand-500/25">Hubungkan Sekarang</button>
                 </div>
             </div>
         </div>
 
     </main>
 
-    <!-- Footer -->
-    <footer class="border-t border-slate-900 bg-slate-950 py-4 text-center text-[10px] text-slate-500">
-        <div class="max-w-7xl mx-auto px-4">
-            <p>© 2026 TrainerShare Vercel Edition. Dioptimalkan untuk Layout Mobile & 100+ Soal.</p>
-        </div>
+    <footer class="border-t border-slate-900 bg-slate-950 py-4 text-center text-[10px] text-slate-500 font-mono">
+        © 2026 TrainerShare Live Realtime System • Anti-Offline Architecture.
     </footer>
 
-    <!-- Firebase Module Engine -->
+    <!-- Firebase Script Core Platform -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // SEED INITIAL QUESTIONS DATA
-        window.activeQuizQuestions = [
-            {
-                question: "Manakah tindakan pertama sebelum memulai analisis data pelatihan?",
-                a: "Menetapkan objektif masalah secara jelas",
-                b: "Membuat grafik mewah di Excel",
-                c: "Membeli lisensi software analisis mahal",
-                d: "Mengabaikan data dan mengambil keputusan intuitif",
-                correctIndex: 0
-            },
-            {
-                question: "Gaya kepemimpinan yang berfokus pada pengembangan skill jangka panjang karyawan adalah...",
-                a: "Otoriter",
-                b: "Coaching",
-                c: "Demokratis",
-                d: "Laissez-faire",
-                correctIndex: 1
-            },
-            {
-                question: "Siapa namaku?",
-                a: "Gitar",
-                b: "Sela",
-                c: "Sandro",
-                d: "Yoga",
-                correctIndex: 2
-            }
-        ];
-
+        window.activeQuizQuestions = [];
         window.submissionsDatabase = [];
-        window.isDbConnected = false;
         
         let db = null;
         let auth = null;
-        let appId = 'trainershare-default';
+        
+        // Router Detektor Room ID
+        const urlParams = new URLSearchParams(window.location.search);
+        let roomId = urlParams.get('room');
+        let currentRole = urlParams.get('role') || 'participant';
 
-        const initFirebase = async () => {
-            let config = null;
-            const localConfig = localStorage.getItem('custom_firebase_config');
-            
-            if (localConfig) {
-                config = JSON.parse(localConfig);
-                appId = localStorage.getItem('custom_app_id') || 'trainershare-vercel';
-            }
+        if (!roomId) {
+            // Jika trainer baru membuka aplikasi tanpa kode room, otomatis create room acak
+            roomId = 'TS-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+            currentRole = 'trainer';
+            window.history.replaceState({}, '', `${window.location.pathname}?room=${roomId}&role=trainer`);
+        }
 
-            // Jalankan ekstraksi parameter URL tanpa syarat di awal
-            window.processUrlParameters();
+        document.getElementById('room-id-display').innerText = roomId;
+        document.getElementById('role-badge-mobile').innerText = currentRole === 'trainer' ? '👨‍🏫 Trainer' : '📝 Peserta';
 
-            if (!config) {
-                console.log("Database offline mode active.");
-                window.updateStatusBadge(false);
-                
-                // Render komponen lokal
-                if (window.renderGridTable) window.renderGridTable();
-                if (window.renderTrainerDashboard) window.renderTrainerDashboard();
-                if (window.updateShareLink) window.updateShareLink();
+        const runSystemCore = async () => {
+            const rawConfig = localStorage.getItem('ts_firebase_config_live');
+            if (!rawConfig) {
+                document.getElementById('view-setup-required').classList.remove('hidden');
                 return;
             }
 
             try {
+                const config = JSON.parse(rawConfig);
                 const app = initializeApp(config);
                 auth = getAuth(app);
                 db = getFirestore(app);
 
                 await signInAnonymously(auth);
 
-                onAuthStateChanged(auth, (user) => {
-                    if (user) {
-                        window.isDbConnected = true;
-                        window.updateStatusBadge(true);
-                        document.getElementById('db-warning-banner').classList.add('hidden');
-                        listenToLiveSubmissions();
-                        listenToLiveQuiz();
-                    }
-                });
+                // Update UI status online terhubung
+                const badge = document.getElementById('cloud-status-badge');
+                badge.innerText = "☁️ ONLINE LIVE";
+                badge.className = "px-2.5 py-1.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-xl text-[10px] font-bold uppercase tracking-wider animate-pulse";
+
+                if (currentRole === 'trainer') {
+                    document.getElementById('view-trainer').classList.remove('hidden');
+                    window.updateShareLink(roomId);
+                    listenToLiveSubmissions();
+                    listenToLiveQuiz();
+                } else {
+                    document.getElementById('view-participant').classList.remove('hidden');
+                    listenToLiveQuiz(); // Peserta mendengarkan update bank soal dari cloud secara pasif
+                }
+
             } catch (err) {
-                console.error("Firebase fail:", err);
-                window.updateStatusBadge(false);
-                if (window.renderGridTable) window.renderGridTable();
+                alert("Koneksi cloud gagal. Periksa JSON Firebase config Anda.");
+                console.error(err);
             }
         };
 
+        // Listen Hasil Ujian Peserta Secara Real-Time
         function listenToLiveSubmissions() {
-            if (!db) return;
-            const subsCollection = collection(db, 'artifacts', appId, 'public', 'data', 'submissions');
+            const subsCollection = collection(db, 'trainershare_rooms', roomId, 'submissions');
             onSnapshot(subsCollection, (snapshot) => {
-                const records = [];
-                snapshot.forEach(doc => records.push(doc.data()));
-                window.submissionsDatabase = records;
+                const dataRecords = [];
+                snapshot.forEach(doc => dataRecords.push(doc.data()));
+                window.submissionsDatabase = dataRecords;
                 window.renderTrainerDashboard();
             });
         }
 
+        // Listen Perubahan Soal
         function listenToLiveQuiz() {
-            if (!db) return;
-            const quizDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'active_quiz');
+            const quizDocRef = doc(db, 'trainershare_rooms', roomId);
             onSnapshot(quizDocRef, (docSnap) => {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    if (data.questions) {
-                        window.activeQuizQuestions = data.questions;
-                        document.getElementById('input-session-title').value = data.title || "Sesi Evaluasi";
+                    window.activeQuizQuestions = data.questions || [];
+                    if (currentRole === 'trainer') {
+                        document.getElementById('input-session-title').value = data.title || "Evaluasi";
                         window.renderGridTable();
-                        window.renderTrainerDashboard();
-                        window.updateShareLink();
+                    } else {
+                        document.getElementById('p-quiz-title').innerText = data.title || "Evaluasi Pelatihan";
+                        document.getElementById('p-total-questions-badge').innerText = `${window.activeQuizQuestions.length} Pertanyaan Tersedia`;
                     }
+                } else if (currentRole === 'trainer') {
+                    // Seed awal data jika database room masih baru/kosong di cloud
+                    window.activeQuizQuestions = [
+                        { question: "Contoh Soal 1", a: "Opsi A", b: "Opsi B", c: "Opsi C", d: "Opsi D", correctIndex: 0 }
+                    ];
+                    window.renderGridTable();
+                    window.saveQuizToDb();
                 }
             });
         }
 
-        window.saveQuizToDb = async (title, questions) => {
-            if (!db || !window.isDbConnected) return false;
-            try {
-                const quizDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'active_quiz');
-                await setDoc(quizDocRef, { title, questions, updatedAt: new Date().toISOString() });
-                return true;
-            } catch (err) { return false; }
+        // Simpan Data Ke Cloud Firestore
+        window.saveQuizToDb = async () => {
+            if (!db) return;
+            const title = document.getElementById('input-session-title').value.trim();
+            await setDoc(doc(db, 'trainershare_rooms', roomId), {
+                title: title,
+                questions: window.activeQuizQuestions,
+                updatedAt: new Date().toISOString()
+            });
+            window.showToast("Bank soal di-publish online!");
         };
 
         window.submitResultToDb = async (record) => {
-            if (!db || !window.isDbConnected) return false;
-            try {
-                const subDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'submissions', record.id);
-                await setDoc(subDocRef, record);
-                return true;
-            } catch (err) { return false; }
+            if (!db) return;
+            await setDoc(doc(db, 'trainershare_rooms', roomId, 'submissions', record.id), record);
         };
 
-        window.resetAllDbData = async () => {
-            if (!db || !window.isDbConnected) return;
-            try {
-                const quizDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'active_quiz');
-                await setDoc(quizDocRef, { title: "Sesi Baru", questions: [] });
-            } catch (err) {}
-        };
-
-        // Run engine setelah loading dasar siap
-        setTimeout(initFirebase, 20);
+        setTimeout(runSystemCore, 50);
     </script>
 
-    <!-- UI Interaction Core (Eksplisit terikat ke objek window global) -->
+    <!-- CORE INTERACTION JAVASCRIPT -->
     <script>
         let currentExamState = { currentIndex: 0, chosenAnswers: [], correctCount: 0 };
 
-        window.updateStatusBadge = function(connected) {
-            const badge = document.getElementById('db-status-badge');
-            const warningBanner = document.getElementById('db-warning-banner');
-            if(!badge) return;
-            
-            if (connected) {
-                badge.innerText = "⚡ Online Realtime";
-                badge.className = "px-2.5 py-1.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-xl text-[10px] font-bold uppercase tracking-wider animate-pulse";
-                if(warningBanner) warningBanner.classList.add('hidden');
-            } else {
-                badge.innerText = "🔌 Offline (Lokal)";
-                badge.className = "px-2.5 py-1.5 bg-amber-500/10 border border-amber-500/30 text-amber-400 rounded-xl text-[10px] font-bold uppercase tracking-wider";
-                if(warningBanner) warningBanner.classList.remove('hidden');
-            }
+        window.openDbModal = function() {
+            document.getElementById('modal-db-settings').classList.remove('hidden');
+            const saved = localStorage.getItem('ts_firebase_config_live');
+            if (saved) document.getElementById('db-config-textarea').value = saved;
         };
 
-        window.processUrlParameters = function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const mode = urlParams.get('mode');
-            const title = urlParams.get('title');
-            const encodedData = urlParams.get('data');
+        window.closeDbModal = function() {
+            document.getElementById('modal-db-settings').classList.add('hidden');
+        };
 
-            if (mode === 'participant') {
-                if (encodedData) {
-                    try {
-                        const decodedString = decodeURIComponent(atob(encodedData));
-                        window.activeQuizQuestions = JSON.parse(decodedString);
-                        const titleInput = document.getElementById('input-session-title');
-                        if (titleInput) titleInput.value = title || "Kuis Pilihan Ganda";
-                    } catch (e) {
-                        console.error("Decode fail:", e);
-                    }
+        window.saveDbSettings = function() {
+            const val = document.getElementById('db-config-textarea').value.trim();
+            if (!val) {
+                localStorage.removeItem('ts_firebase_config_live');
+            } else {
+                try {
+                    JSON.parse(val);
+                    localStorage.setItem('ts_firebase_config_live', val);
+                } catch(e) {
+                    alert("Format tulisan harus berbentuk JSON valid!");
+                    return;
                 }
-                window.simulateAsParticipant();
-                const backBtnBox = document.getElementById('participant-back-btn-container');
-                if(backBtnBox) backBtnBox.classList.add('hidden');
             }
+            location.reload();
+        };
+
+        window.updateShareLink = function(rId) {
+            const out = document.getElementById('share-link-input');
+            if (out) out.value = `${window.location.origin}${window.location.pathname}?room=${rId}`;
+        };
+
+        window.copyShareLink = function() {
+            const inp = document.getElementById('share-link-input');
+            inp.select();
+            document.execCommand('copy');
+            window.showToast("Link ujian disalin! Kirim ke grup peserta.");
         };
 
         window.renderGridTable = function() {
             const tbody = document.getElementById('questions-grid-tbody');
-            if(!tbody) return;
+            if (!tbody) return;
             tbody.innerHTML = '';
 
             window.activeQuizQuestions.forEach((q, idx) => {
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-950/40 transition-all border-b border-slate-800/60 text-xs";
+                tr.className = "hover:bg-slate-950/40 border-b border-slate-800/60";
                 tr.innerHTML = `
-                    <td class="px-2 py-2 text-center text-slate-500 font-bold bg-slate-900/20">${idx + 1}</td>
-                    <td class="px-2 py-1">
-                        <input id="grid-q-${idx}" type="text" value="${q.question}" class="w-full bg-slate-950 border border-slate-800 focus:border-brand-500 rounded-lg px-2.5 py-2 text-white focus:outline-none">
-                    </td>
-                    <td class="px-2 py-1">
-                        <input id="grid-a-${idx}" type="text" value="${q.a || ''}" class="w-full bg-slate-950 border border-slate-800 focus:border-brand-500 rounded-lg px-2.5 py-2 text-white focus:outline-none">
-                    </td>
-                    <td class="px-2 py-1">
-                        <input id="grid-b-${idx}" type="text" value="${q.b || ''}" class="w-full bg-slate-950 border border-slate-800 focus:border-brand-500 rounded-lg px-2.5 py-2 text-white focus:outline-none">
-                    </td>
-                    <td class="px-2 py-1">
-                        <input id="grid-c-${idx}" type="text" value="${q.c || ''}" class="w-full bg-slate-950 border border-slate-800 focus:border-brand-500 rounded-lg px-2.5 py-2 text-white focus:outline-none">
-                    </td>
-                    <td class="px-2 py-1">
-                        <input id="grid-d-${idx}" type="text" value="${q.d || ''}" class="w-full bg-slate-950 border border-slate-800 focus:border-brand-500 rounded-lg px-2.5 py-2 text-white focus:outline-none">
-                    </td>
+                    <td class="px-2 py-2 text-center text-slate-500 font-bold font-mono">${idx + 1}</td>
+                    <td class="px-2 py-1"><input id="grid-q-${idx}" type="text" value="${q.question}" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-white focus:outline-none focus:border-brand-500"></td>
+                    <td class="px-2 py-1"><input id="grid-a-${idx}" type="text" value="${q.a || ''}" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-white focus:outline-none focus:border-brand-500"></td>
+                    <td class="px-2 py-1"><input id="grid-b-${idx}" type="text" value="${q.b || ''}" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-white focus:outline-none focus:border-brand-500"></td>
+                    <td class="px-2 py-1"><input id="grid-c-${idx}" type="text" value="${q.c || ''}" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-white focus:outline-none focus:border-brand-500"></td>
+                    <td class="px-2 py-1"><input id="grid-d-${idx}" type="text" value="${q.d || ''}" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-white focus:outline-none focus:border-brand-500"></td>
                     <td class="px-2 py-1 text-center">
-                        <select id="grid-correct-${idx}" class="w-full bg-slate-950 border border-slate-800 focus:border-brand-500 rounded-lg px-2 py-2 text-brand-400 font-bold focus:outline-none text-center">
+                        <select id="grid-correct-${idx}" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-1.5 py-1.5 text-brand-400 font-bold focus:outline-none text-center">
                             <option value="0" ${q.correctIndex === 0 ? 'selected' : ''}>A</option>
                             <option value="1" ${q.correctIndex === 1 ? 'selected' : ''}>B</option>
                             <option value="2" ${q.correctIndex === 2 ? 'selected' : ''}>C</option>
@@ -584,99 +523,55 @@
                         </select>
                     </td>
                     <td class="px-2 py-1 text-center">
-                        <button onclick="window.removeGridRow(${idx})" class="p-2 hover:bg-rose-500/10 text-rose-500 hover:text-rose-400 rounded-xl transition-all text-sm">🗑️</button>
+                        <button onclick="window.removeGridRow(${idx})" class="p-1 text-rose-500 hover:text-rose-400 text-xs">🗑️</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
-
-            const counter = document.getElementById('grid-status-counter');
-            if(counter) counter.innerText = `Jumlah saat ini: ${window.activeQuizQuestions.length} baris/soal`;
+            document.getElementById('grid-status-counter').innerText = `Kapasitas: ${window.activeQuizQuestions.length} nomor soal online`;
         };
 
         window.saveGridData = function() {
-            const titleEl = document.getElementById('input-session-title');
-            const title = titleEl ? titleEl.value.trim() : "Sesi Evaluasi";
-            const updatedList = [];
-
+            const list = [];
             for (let i = 0; i < window.activeQuizQuestions.length; i++) {
                 const questionVal = document.getElementById(`grid-q-${i}`).value.trim();
-                const aVal = document.getElementById(`grid-a-${i}`).value.trim();
-                const bVal = document.getElementById(`grid-b-${i}`).value.trim();
-                const cVal = document.getElementById(`grid-c-${i}`).value.trim();
-                const dVal = document.getElementById(`grid-d-${i}`).value.trim();
-                const correctVal = parseInt(document.getElementById(`grid-correct-${i}`).value);
-
-                if (!questionVal) {
-                    alert(`Baris ${i + 1} tidak boleh kosong!`);
-                    return;
-                }
-
-                updatedList.push({
+                if (!questionVal) { alert(`Pertanyaan nomor ${i + 1} tidak boleh kosong.`); return; }
+                list.push({
                     question: questionVal,
-                    a: aVal || "Opsi A",
-                    b: bVal || "Opsi B",
-                    c: cVal || "Opsi C",
-                    d: dVal || "Opsi D",
-                    correctIndex: correctVal
+                    a: document.getElementById(`grid-a-${i}`).value.trim() || 'Opsi A',
+                    b: document.getElementById(`grid-b-${i}`).value.trim() || 'Opsi B',
+                    c: document.getElementById(`grid-c-${i}`).value.trim() || 'Opsi C',
+                    d: document.getElementById(`grid-d-${i}`).value.trim() || 'Opsi D',
+                    correctIndex: parseInt(document.getElementById(`grid-correct-${i}`).value)
                 });
             }
-
-            window.activeQuizQuestions = updatedList;
-
-            if (window.isDbConnected) {
-                window.saveQuizToDb(title, updatedList).then(success => {
-                    if (success) window.showToast("Perubahan tersimpan ke Cloud Firestore!");
-                });
-            } else {
-                window.updateShareLink();
-                window.showToast("Berhasil di-update! Silakan salin ulang link kuis baru.");
-            }
-        };
-
-        window.updateShareLink = function() {
-            const titleEl = document.getElementById('input-session-title');
-            const title = titleEl ? titleEl.value.trim() : "Evaluasi";
-            const inputLink = document.getElementById('share-link-input');
-            if(!inputLink) return;
-
-            if (window.isDbConnected) {
-                inputLink.value = `${window.location.origin}${window.location.pathname}?mode=participant`;
-            } else {
-                try {
-                    const compressedData = btoa(encodeURIComponent(JSON.stringify(window.activeQuizQuestions)));
-                    inputLink.value = `${window.location.origin}${window.location.pathname}?mode=participant&title=${encodeURIComponent(title)}&data=${compressedData}`;
-                } catch (e) {
-                    console.error(e);
-                }
-            }
+            window.activeQuizQuestions = list;
+            window.saveQuizToDb();
         };
 
         window.addNewGridRow = function() {
-            window.syncInputsToMemory();
+            window.syncTableToMemory();
             window.activeQuizQuestions.push({ question: "", a: "", b: "", c: "", d: "", correctIndex: 0 });
             window.renderGridTable();
         };
 
         window.addTenGridRows = function() {
-            window.syncInputsToMemory();
-            for (let i = 0; i < 10; i++) {
-                window.activeQuizQuestions.push({ question: "", a: "", b: "", c: "", d: "", correctIndex: 0 });
-            }
+            window.syncTableToMemory();
+            for(let i=0; i<10; i++) window.activeQuizQuestions.push({ question: "", a: "", b: "", c: "", d: "", correctIndex: 0 });
             window.renderGridTable();
         };
 
         window.removeGridRow = function(idx) {
-            window.syncInputsToMemory();
+            window.syncTableToMemory();
             window.activeQuizQuestions.splice(idx, 1);
             window.renderGridTable();
         };
 
-        window.syncInputsToMemory = function() {
+        window.syncTableToMemory = function() {
             for (let i = 0; i < window.activeQuizQuestions.length; i++) {
-                const el = document.getElementById(`grid-q-${i}`);
-                if (el) {
-                    window.activeQuizQuestions[i].question = el.value;
+                const qEl = document.getElementById(`grid-q-${i}`);
+                if (qEl) {
+                    window.activeQuizQuestions[i].question = qEl.value;
                     window.activeQuizQuestions[i].a = document.getElementById(`grid-a-${i}`).value;
                     window.activeQuizQuestions[i].b = document.getElementById(`grid-b-${i}`).value;
                     window.activeQuizQuestions[i].c = document.getElementById(`grid-c-${i}`).value;
@@ -686,168 +581,89 @@
             }
         };
 
-        window.triggerResetAll = function() {
-            if (confirm("Reset seluruh data kuis ini?")) {
-                window.activeQuizQuestions = [];
-                window.submissionsDatabase = [];
-                if (window.isDbConnected) {
-                    window.resetAllDbData();
-                } else {
-                    window.renderGridTable();
-                    window.renderTrainerDashboard();
-                    window.updateShareLink();
-                    window.showToast("Data lokal dibersihkan.");
-                }
-            }
-        };
-
         window.inject100Questions = function() {
             const demo = [];
             for (let i = 1; i <= 100; i++) {
                 demo.push({
-                    question: `Soal Manajemen Kompetensi Finansial #${i}: Bagaimanakah standar mitigasi operasional risiko keuangan berdasarkan ISO 31000?`,
-                    a: "Menerapkan kerangka kerja tata kelola terintegrated harian",
-                    b: "Mengabaikan indikator pengawasan audit internal",
-                    c: "Membebankan seluruh kerugian langsung pada staff operasional",
-                    d: "Melakukan penundaan pelaporan kerugian triwulanan",
+                    question: `Soal Uji Validitas Kerja #${i}: Apakah langkah utama pengamanan mitigasi data operasional?`,
+                    a: "Enkripsi end-to-end database berkala",
+                    b: "Menulis password di kertas meja",
+                    c: "Mematikan server saat jam makan siang",
+                    d: "Membagi dokumen rahasia ke publik",
                     correctIndex: Math.floor(Math.random() * 4)
                 });
             }
             window.activeQuizQuestions = demo;
             window.renderGridTable();
-            window.updateShareLink();
-            window.showToast("100 Soal Demo berhasil dimuat! Klik 'Simpan Semua' untuk aktivasi link.");
+            window.showToast("100 Soal demo siap. Klik 'Publikasikan' untuk kirim ke cloud.");
         };
 
+        // RENDERING DASHBOARD REALTIME (NAMA, JABATAN, WILAYAH, RINCIAN LOG JAWABAN)
         window.renderTrainerDashboard = function() {
             const total = window.submissionsDatabase.length;
-            const totalSubsEl = document.getElementById('stat-total-subs');
-            if(totalSubsEl) totalSubsEl.innerText = total;
+            document.getElementById('stat-total-subs').innerText = total;
 
+            const tbody = document.getElementById('individual-results-tbody');
             if (total === 0) {
                 document.getElementById('stat-avg-score').innerText = "0%";
                 document.getElementById('stat-max-score').innerText = "0%";
                 document.getElementById('stat-min-score').innerText = "0%";
-                document.getElementById('hardest-questions-box').innerHTML = `<p class="text-xs text-slate-500 italic py-3 text-center">Belum ada jawaban masuk.</p>`;
-                document.getElementById('individual-results-tbody').innerHTML = `<tr><td colspan="4" class="px-4 py-8 text-center text-slate-500">Menunggu peserta menjawab kuis...</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-8 text-center text-slate-500 font-medium">Menunggu peserta mengirim hasil jawaban...</td></tr>`;
                 return;
             }
 
             const scores = window.submissionsDatabase.map(s => s.score);
-            const avg = (scores.reduce((a, b) => a + b, 0) / total).toFixed(1);
-            document.getElementById('stat-avg-score').innerText = `${avg}%`;
+            document.getElementById('stat-avg-score').innerText = `${(scores.reduce((a,b)=>a+b,0)/total).toFixed(1)}%`;
             document.getElementById('stat-max-score').innerText = `${Math.max(...scores)}%`;
             document.getElementById('stat-min-score').innerText = `${Math.min(...scores)}%`;
 
-            const failures = window.activeQuizQuestions.map((q, qIdx) => {
-                let wrong = 0;
-                window.submissionsDatabase.forEach(sub => {
-                    if (sub.answersRecord && sub.answersRecord[qIdx] !== q.correctIndex) wrong++;
-                });
-                return { index: qIdx, question: q.question, wrongPercent: Math.round((wrong / total) * 100) };
-            });
-
-            const hardest = [...failures].filter(f => f.wrongPercent > 0).sort((a,b) => b.wrongPercent - a.wrongPercent).slice(0, 3);
-            const hardBox = document.getElementById('hardest-questions-box');
-            hardBox.innerHTML = '';
-
-            if (hardest.length === 0) {
-                hardBox.innerHTML = `<p class="text-xs text-emerald-400 font-bold text-center py-2">⭐ Semua soal dijawab dengan benar.</p>`;
-            } else {
-                hardest.forEach(item => {
-                    hardBox.innerHTML += `
-                        <div class="p-2.5 bg-slate-900 border border-slate-850 rounded-xl space-y-0.5">
-                            <div class="flex justify-between items-center text-[10px]">
-                                <span class="font-bold text-rose-400">Soal #${item.index + 1}</span>
-                                <span class="bg-rose-500/10 text-rose-400 px-1.5 py-0.5 rounded font-bold">${item.wrongPercent}% Salah</span>
-                            </div>
-                            <p class="text-xs text-slate-300 truncate">${item.question}</p>
-                        </div>
-                    `;
-                });
-            }
-
-            const tbody = document.getElementById('individual-results-tbody');
             tbody.innerHTML = '';
-            [...window.submissionsDatabase].reverse().forEach(sub => {
+            // Susun berdasarkan kiriman terbaru di baris paling atas
+            [...window.submissionsDatabase].sort((a,b) => b.id.localeCompare(a.id)).forEach(sub => {
+                
+                // Formasi Rincian Jawaban: No:Opsi (Warna Hijau jika benar, Merah jika salah)
+                let rincianHtml = "";
+                if (sub.answersRecord && Array.isArray(sub.answersRecord)) {
+                    rincianHtml = sub.answersRecord.map((ansIdx, qIdx) => {
+                        const opsiHuruf = ['A', 'B', 'C', 'D'][ansIdx] || '-';
+                        const isCorrect = window.activeQuizQuestions[qIdx] && window.activeQuizQuestions[qIdx].correctIndex === ansIdx;
+                        return `<span class="${isCorrect ? 'text-emerald-400 font-bold' : 'text-rose-500'} font-mono text-[10px] bg-slate-950 px-1 py-0.5 rounded border border-slate-800" title="Nomor ${qIdx+1}">[${qIdx+1}:${opsiHuruf}]</span>`;
+                    }).join(' ');
+                } else {
+                    rincianHtml = `<span class="text-slate-600 italic">No logs</span>`;
+                }
+
                 tbody.innerHTML += `
-                    <tr class="hover:bg-slate-950/40">
-                        <td class="px-4 py-2.5 font-bold text-white text-xs">${sub.name}</td>
-                        <td class="px-4 py-2.5 text-center text-slate-400 text-xs">${sub.correctCount} / ${sub.total}</td>
-                        <td class="px-4 py-2.5 text-right font-black text-brand-400 text-xs">${sub.score}%</td>
-                        <td class="px-4 py-2.5 text-right text-slate-400 text-[10px]">${sub.timestamp}</td>
+                    <tr class="hover:bg-slate-900/40 border-b border-slate-800/40">
+                        <td class="px-4 py-3 font-bold text-white text-sm whitespace-nowrap">${sub.name}</td>
+                        <td class="px-4 py-3 text-slate-300 font-medium whitespace-nowrap">💼 ${sub.role}</td>
+                        <td class="px-4 py-3 text-brand-400 font-semibold whitespace-nowrap">📍 ${sub.region}</td>
+                        <td class="px-4 py-3 max-w-[280px]">
+                            <div class="flex flex-wrap gap-1 max-h-14 overflow-y-auto p-1 bg-slate-950/30 rounded border border-slate-850">
+                                ${rincianHtml}
+                            </div>
+                        </td>
+                        <td class="px-4 py-3 text-center text-slate-400 font-mono font-bold">${sub.correctCount} / ${sub.total}</td>
+                        <td class="px-4 py-3 text-right font-black text-emerald-400 text-sm">${sub.score}%</td>
+                        <td class="px-4 py-3 text-right text-slate-500 text-[10px] font-mono whitespace-nowrap">${sub.timestamp}</td>
                     </tr>
                 `;
             });
         };
 
-        window.copyShareLink = function() {
-            window.updateShareLink();
-            const inp = document.getElementById('share-link-input');
-            if(!inp) return;
-            inp.select();
-            document.execCommand('copy');
-            window.showToast("Tautan kuis berhasil disalin!");
-        };
-
-        window.downloadCSVResults = function() {
-            if (window.submissionsDatabase.length === 0) return;
-            let csv = "Nama Peserta,Jawaban Benar,Total Pertanyaan,Nilai (%),Waktu Selesai\n";
-            window.submissionsDatabase.forEach(sub => {
-                csv += `"${sub.name}",${sub.correctCount},${sub.total},${sub.score},"${sub.timestamp}"\n`;
-            });
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `rekap_nilai_trainershare.csv`;
-            a.click();
-        };
-
-        // INTEGRASI BARU: Fungsi Unduh Hasil untuk Peserta Saat Offline
-        window.downloadMyResult = function() {
-            const name = document.getElementById('label-completed-user').innerText;
-            const score = document.getElementById('label-completed-score').innerText;
-            const stats = document.getElementById('label-completed-stats').innerText;
-            const timestamp = window.getIndonesianTimestamp();
-            
-            const content = `HASIL EVALUASI KOMPETENSI PESERTA\n=================================\nNama Peserta : ${name}\nSkor Akhir   : ${score}\nKeterangan   : ${stats}\nWaktu Ujian  : ${timestamp}\n=================================\nStatus Data  : Terverifikasi Lokal\nApp Provider : TrainerShare Pro Vercel\n\nSilakan kirim dokumen .txt ini ke pengajar Anda sebagai bukti pengumpulan nilai resmi.`;
-            
-            const blob = new Blob([content], { type: 'text/plain;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `Hasil_Kuis_${name.replace(/\s+/g, '_')}.txt`;
-            a.click();
-            window.showToast("Berkas hasil berhasil diunduh!");
-        };
-
-        window.simulateAsParticipant = function() {
-            if (window.activeQuizQuestions.length === 0) {
-                alert("Tabel soal kosong.");
-                return;
-            }
-
-            const ind = document.getElementById('role-indicator');
-            if(ind) {
-                ind.innerText = "📝 Peserta";
-                ind.className = "sm:hidden text-[10px] bg-brand-500/10 border border-brand-500/30 text-brand-400 px-2.5 py-1 rounded-full font-bold";
-            }
-
-            document.getElementById('view-trainer').classList.add('hidden');
-            document.getElementById('view-participant').classList.remove('hidden');
-            document.getElementById('participant-welcome').classList.remove('hidden');
-            document.getElementById('participant-exam-board').classList.add('hidden');
-            document.getElementById('participant-completed').classList.add('hidden');
-
-            const sessionTitle = document.getElementById('input-session-title') ? document.getElementById('input-session-title').value : "Sesi Evaluasi";
-            document.getElementById('p-quiz-title').innerText = sessionTitle;
-            document.getElementById('p-total-questions-badge').innerText = `${window.activeQuizQuestions.length} Pertanyaan`;
-        };
-
         window.startExamAction = function() {
             const name = document.getElementById('participant-name').value.trim();
-            if (!name) { alert("Masukkan nama Anda"); return; }
+            const role = document.getElementById('participant-role').value.trim();
+            const region = document.getElementById('participant-region').value.trim();
+
+            if (!name || !role || !region) {
+                alert("Wajib Mengisi Seluruh Data Identitas: Nama, Jabatan, & Wilayah Kerja!");
+                return;
+            }
+            if (window.activeQuizQuestions.length === 0) {
+                alert("Trainer belum mengunggah soal ke room ini.");
+                return;
+            }
 
             currentExamState = { currentIndex: 0, chosenAnswers: [], correctCount: 0 };
             document.getElementById('participant-welcome').classList.add('hidden');
@@ -862,144 +678,93 @@
 
             const pct = Math.round(((idx + 1) / total) * 100);
             document.getElementById('exam-progress-bar').style.width = `${pct}%`;
-            document.getElementById('exam-counter-text').innerText = `Soal ${idx + 1} dari ${total}`;
-            document.getElementById('exam-score-live-tracker').innerText = `Progres: ${pct}%`;
+            document.getElementById('exam-counter-text').innerText = `Pertanyaan ${idx + 1} dari ${total}`;
+            document.getElementById('exam-score-live-tracker').innerText = `Progress: ${pct}%`;
             document.getElementById('exam-question-text').innerText = q.question;
 
-            const container = document.getElementById('exam-options-container');
-            container.innerHTML = `
+            document.getElementById('exam-options-container').innerHTML = `
                 <label class="flex items-center space-x-3 p-3 bg-slate-950 border border-slate-850 hover:border-brand-500 rounded-xl cursor-pointer text-xs sm:text-sm transition-all">
-                    <input type="radio" name="p-ans" value="0" class="accent-brand-500 w-4 h-4">
-                    <span><strong class="text-brand-400">A.</strong> ${q.a}</span>
+                    <input type="radio" name="live-opt" value="0" class="accent-brand-500 w-4 h-4"><span><strong class="text-brand-400 font-mono">A.</strong> ${q.a}</span>
                 </label>
                 <label class="flex items-center space-x-3 p-3 bg-slate-950 border border-slate-850 hover:border-brand-500 rounded-xl cursor-pointer text-xs sm:text-sm transition-all">
-                    <input type="radio" name="p-ans" value="1" class="accent-brand-500 w-4 h-4">
-                    <span><strong class="text-brand-400">B.</strong> ${q.b}</span>
+                    <input type="radio" name="live-opt" value="1" class="accent-brand-500 w-4 h-4"><span><strong class="text-brand-400 font-mono">B.</strong> ${q.b}</span>
                 </label>
                 <label class="flex items-center space-x-3 p-3 bg-slate-950 border border-slate-850 hover:border-brand-500 rounded-xl cursor-pointer text-xs sm:text-sm transition-all">
-                    <input type="radio" name="p-ans" value="2" class="accent-brand-500 w-4 h-4">
-                    <span><strong class="text-brand-400">C.</strong> ${q.c}</span>
+                    <input type="radio" name="live-opt" value="2" class="accent-brand-500 w-4 h-4"><span><strong class="text-brand-400 font-mono">C.</strong> ${q.c}</span>
                 </label>
                 <label class="flex items-center space-x-3 p-3 bg-slate-950 border border-slate-850 hover:border-brand-500 rounded-xl cursor-pointer text-xs sm:text-sm transition-all">
-                    <input type="radio" name="p-ans" value="3" class="accent-brand-500 w-4 h-4">
-                    <span><strong class="text-brand-400">D.</strong> ${q.d}</span>
+                    <input type="radio" name="live-opt" value="3" class="accent-brand-500 w-4 h-4"><span><strong class="text-brand-400 font-mono">D.</strong> ${q.d}</span>
                 </label>
             `;
-
-            document.getElementById('btn-next-question').innerText = (idx === total - 1) ? "Kirim Jawaban" : "Seterusnya";
+            document.getElementById('btn-next-question').innerText = (idx === total - 1) ? "Kirim Hasil Final 📡" : "Seterusnya";
         };
 
         window.advanceExamQuestion = function() {
-            const selected = document.querySelector('input[name="p-ans"]:checked');
-            if (!selected) { alert("Pilih jawaban Anda terlebih dahulu."); return; }
+            const checked = document.querySelector('input[name="live-opt"]:checked');
+            if(!checked) { alert("Silakan tentukan pilihan kolom jawaban Anda."); return; }
 
-            const val = parseInt(selected.value);
+            const val = parseInt(checked.value);
             const idx = currentExamState.currentIndex;
-            const q = window.activeQuizQuestions[idx];
-
             currentExamState.chosenAnswers.push(val);
-            if (val === q.correctIndex) currentExamState.correctCount++;
 
+            if (val === window.activeQuizQuestions[idx].correctIndex) currentExamState.correctCount++;
             const total = window.activeQuizQuestions.length;
 
             if (idx < total - 1) {
                 currentExamState.currentIndex++;
                 window.renderExamQuestion();
             } else {
+                // Selesai & Kirim Otomatis Ke Cloud
                 const finalScore = Math.round((currentExamState.correctCount / total) * 100);
                 const name = document.getElementById('participant-name').value.trim();
+                const role = document.getElementById('participant-role').value.trim();
+                const region = document.getElementById('participant-region').value.trim();
 
-                const newRecord = {
-                    id: `sub-${Date.now()}`,
-                    name,
+                const timeStamp = new Date();
+                const minutesStr = String(timeStamp.getMinutes()).padStart(2,'0');
+                const timeString = `${timeStamp.getHours()}:${minutesStr} WIB`;
+
+                const record = {
+                    id: `uid-${Date.now()}-${Math.random().toString(36).substring(2,5)}`,
+                    name, role, region,
                     correctCount: currentExamState.correctCount,
-                    total,
-                    score: finalScore,
-                    timestamp: window.getIndonesianTimestamp(),
+                    total, score: finalScore,
+                    timestamp: timeString,
                     answersRecord: currentExamState.chosenAnswers
                 };
 
-                if (window.isDbConnected) {
-                    window.submitResultToDb(newRecord);
-                } else {
-                    window.submissionsDatabase.push(newRecord);
-                }
-
-                document.getElementById('participant-exam-board').classList.add('hidden');
-                document.getElementById('participant-completed').classList.remove('hidden');
-                document.getElementById('label-completed-user').innerText = name;
-                document.getElementById('label-completed-score').innerText = `${finalScore}%`;
-                document.getElementById('label-completed-stats').innerText = `Menjawab benar ${currentExamState.correctCount} dari ${total} soal.`;
+                window.submitResultToDb(record).then(() => {
+                    document.getElementById('participant-exam-board').classList.add('hidden');
+                    document.getElementById('participant-completed').classList.remove('hidden');
+                    document.getElementById('label-completed-user').innerText = name;
+                    document.getElementById('label-completed-score').innerText = `${finalScore}%`;
+                    document.getElementById('label-completed-stats').innerText = `Skor Akurasi: Benar ${currentExamState.correctCount} dari ${total} total pertanyaan.`;
+                });
             }
         };
 
-        window.backToTrainerDashboard = function() {
-            const ind = document.getElementById('role-indicator');
-            if(ind) {
-                ind.innerText = "👨‍🏫 Trainer";
-                ind.className = "sm:hidden text-[10px] bg-violet-500/10 border border-violet-500/30 text-violet-400 px-2.5 py-1 rounded-full font-bold";
-            }
-            document.getElementById('view-participant').classList.add('hidden');
-            document.getElementById('view-trainer').classList.remove('hidden');
-            window.renderTrainerDashboard();
+        window.downloadCSVResults = function() {
+            if (window.submissionsDatabase.length === 0) return;
+            let csv = "Nama Peserta,Jabatan,Wilayah Kerja,Jawaban Benar,Total Pertanyaan,Skor Akhir (%),Waktu Kirim\n";
+            window.submissionsDatabase.forEach(s => {
+                csv += `"${s.name}","${s.role}","${s.region}",${s.correctCount},${s.total},${s.score},"${s.timestamp}"\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `rekap_realtime_trainershare.csv`;
+            a.click();
         };
 
-        window.toggleDbSettings = function() {
-            const modal = document.getElementById('modal-db-settings');
-            if(!modal) return;
-            if (modal.classList.contains('hidden')) {
-                modal.classList.remove('hidden');
-                const currentLocal = localStorage.getItem('custom_firebase_config');
-                if (currentLocal) document.getElementById('db-config-textarea').value = currentLocal;
-            } else {
-                modal.classList.add('hidden');
-            }
-        };
-
-        window.saveDbSettings = function() {
-            const rawJson = document.getElementById('db-config-textarea').value.trim();
-            if (!rawJson) {
-                localStorage.removeItem('custom_firebase_config');
-                localStorage.removeItem('custom_app_id');
-                location.reload();
-                return;
-            }
-            try {
-                const parsed = JSON.parse(rawJson);
-                localStorage.setItem('custom_firebase_config', JSON.stringify(parsed));
-                if (!localStorage.getItem('custom_app_id')) {
-                    localStorage.setItem('custom_app_id', `room-${Math.random().toString(36).substring(2, 8)}`);
-                }
-                location.reload();
-            } catch (e) { alert("Format JSON tidak valid!"); }
-        };
-
-        window.showToast = function(message) {
-            const toast = document.getElementById('toast');
-            if(!toast) return;
-            document.getElementById('toast-message').innerText = message;
-            toast.className = "fixed top-24 right-4 z-50 transform translate-y-0 opacity-100 transition-all duration-300 bg-brand-600 text-white px-4 py-3 rounded-xl shadow-xl flex items-center space-x-2 text-xs font-bold border border-brand-500/30";
+        window.showToast = function(msg) {
+            const t = document.getElementById('toast');
+            document.getElementById('toast-message').innerText = msg;
+            t.className = "fixed top-24 right-4 z-50 transform translate-y-0 opacity-100 transition-all duration-300 bg-brand-600 text-white px-4 py-3 rounded-xl shadow-xl flex items-center space-x-2 text-xs font-bold border border-brand-500/30";
             setTimeout(() => {
-                toast.className = "fixed top-24 right-4 z-50 transform translate-y-[-100px] opacity-0 transition-all duration-300 bg-brand-600 text-white px-4 py-3 rounded-xl shadow-xl flex items-center space-x-2 text-xs font-bold border border-brand-500/30";
-            }, 3000);
+                t.className = "fixed top-24 right-4 z-50 transform translate-y-[-100px] opacity-0 transition-all duration-300 bg-brand-600 text-white px-4 py-3 rounded-xl shadow-xl flex items-center space-x-2 text-xs font-bold border border-brand-500/30";
+            }, 2500);
         };
-
-        window.getIndonesianTimestamp = function() {
-            const date = new Date();
-            const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"];
-            return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}, ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
-        };
-
-        // PROTEKSI ROUTING AWAL
-        (function targetRouter() {
-            const params = new URLSearchParams(window.location.search);
-            if (params.get('mode') === 'participant') {
-                const vt = document.getElementById('view-trainer');
-                const vp = document.getElementById('view-participant');
-                if(vt) vt.classList.add('hidden');
-                if(vp) vp.classList.remove('hidden');
-            }
-        })();
     </script>
 </body>
 </html>
