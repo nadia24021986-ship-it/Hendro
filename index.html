@@ -27,7 +27,7 @@
 </head>
 <body class="h-full font-sans antialiased flex flex-col justify-between">
 
-    <!-- Navigasi Atas - Diperbaiki agar Responsif di HP -->
+    <!-- Navigasi Atas -->
     <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-0 sm:h-20 flex flex-col sm:flex-row items-center justify-between gap-3">
             <div class="flex items-center space-x-3 w-full sm:w-auto justify-between sm:justify-start">
@@ -299,14 +299,14 @@
                 </div>
             </div>
 
-            <!-- Complete Screen -->
+            <!-- Complete Screen - DIPERBAIKI TOTAL UNTUK MODE OFFLINE & ONLINE -->
             <div id="participant-completed" class="hidden bg-slate-900 border border-emerald-500/20 p-8 rounded-3xl text-center space-y-6 shadow-2xl">
                 <div class="w-14 h-14 bg-emerald-500/10 text-emerald-400 rounded-full flex items-center justify-center text-2xl mx-auto border border-emerald-500/20">
                     🎉
                 </div>
                 <div class="space-y-1.5">
-                    <h2 class="text-lg sm:text-xl font-bold text-white">Evaluasi Selesai & Terkirim!</h2>
-                    <p class="text-xs text-slate-400">Terima kasih <span id="label-completed-user" class="font-bold text-brand-400">Peserta</span>. Hasil jawaban Anda telah terekam.</p>
+                    <h2 class="text-lg sm:text-xl font-bold text-white">Evaluasi Selesai!</h2>
+                    <p class="text-xs text-slate-400">Terima kasih <span id="label-completed-user" class="font-bold text-brand-400">Peserta</span>. Hasil evaluasi Anda berhasil diproses.</p>
                 </div>
 
                 <div class="max-w-xs mx-auto bg-slate-950 p-5 rounded-2xl border border-slate-800/80 space-y-1">
@@ -315,10 +315,18 @@
                     <p class="text-[11px] text-slate-400 mt-1" id="label-completed-stats">Betul 10 dari 10 soal.</p>
                 </div>
 
-                <div class="pt-4 border-t border-slate-800" id="participant-back-btn-container">
-                    <button onclick="window.backToTrainerDashboard()" class="px-5 py-2.5 bg-slate-850 hover:bg-slate-800 text-slate-300 border border-slate-800 rounded-xl text-xs font-bold transition-all">
-                        Kembali ke Panel Trainer
+                <div class="pt-4 border-t border-slate-800 space-y-3">
+                    <!-- Tombol Unduh Hasil Konkrit untuk fallback offline -->
+                    <button onclick="window.downloadMyResult()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition-all shadow-lg shadow-emerald-900/20">
+                        📥 Unduh Bukti Hasil (Format .TXT)
                     </button>
+                    <p class="text-[10px] text-slate-500">Karena sistem sedang offline/lokal, silakan unduh berkas di atas lalu kirimkan hasilnya ke WhatsApp/Email Pengajar Anda.</p>
+                    
+                    <div id="participant-back-btn-container" class="pt-2">
+                        <button onclick="window.backToTrainerDashboard()" class="w-full py-2.5 bg-slate-850 hover:bg-slate-800 text-slate-300 border border-slate-800 rounded-xl text-xs font-bold transition-all">
+                            Kembali ke Panel Trainer
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -796,6 +804,24 @@
             a.click();
         };
 
+        // INTEGRASI BARU: Fungsi Unduh Hasil untuk Peserta Saat Offline
+        window.downloadMyResult = function() {
+            const name = document.getElementById('label-completed-user').innerText;
+            const score = document.getElementById('label-completed-score').innerText;
+            const stats = document.getElementById('label-completed-stats').innerText;
+            const timestamp = window.getIndonesianTimestamp();
+            
+            const content = `HASIL EVALUASI KOMPETENSI PESERTA\n=================================\nNama Peserta : ${name}\nSkor Akhir   : ${score}\nKeterangan   : ${stats}\nWaktu Ujian  : ${timestamp}\n=================================\nStatus Data  : Terverifikasi Lokal\nApp Provider : TrainerShare Pro Vercel\n\nSilakan kirim dokumen .txt ini ke pengajar Anda sebagai bukti pengumpulan nilai resmi.`;
+            
+            const blob = new Blob([content], { type: 'text/plain;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Hasil_Kuis_${name.replace(/\s+/g, '_')}.txt`;
+            a.click();
+            window.showToast("Berkas hasil berhasil diunduh!");
+        };
+
         window.simulateAsParticipant = function() {
             if (window.activeQuizQuestions.length === 0) {
                 alert("Tabel soal kosong.");
@@ -964,7 +990,7 @@
             return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}, ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
         };
 
-        // PROTEKSI INSTAN DI UTAMA: Jika link adalah link peserta, langsung hantam sembunyikan panel trainer sejak awal
+        // PROTEKSI ROUTING AWAL
         (function targetRouter() {
             const params = new URLSearchParams(window.location.search);
             if (params.get('mode') === 'participant') {
